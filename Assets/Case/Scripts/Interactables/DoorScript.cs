@@ -53,10 +53,10 @@ namespace InteractionSystem.Runtime.Interactables
         {
             if (m_CurrentState == stateOfDoor.InAnimation)
                 return;
-            if (m_IsLocked)
-                Debug.Log("Door is locked. Hold to try unlocking.");
-            else
+            if (!m_IsLocked)
                 ToggleDoor();
+            else
+                StartCoroutine(HoldToOpen());
         }
         void IInteractable.InteractLogicHold()
         {
@@ -110,6 +110,24 @@ namespace InteractionSystem.Runtime.Interactables
                 CloseDoor();
             else
                 OpenDoor();
+        }
+
+        private IEnumerator HoldToOpen()
+        {
+            float m_HoldProgress = 0f;
+            float m_HoldDuration = 2f;
+            InteractionUIManager.Instance.ShowHoldProgress();
+
+            while (m_HoldProgress < m_HoldDuration)
+            {
+                m_HoldProgress += Time.deltaTime;
+                float progress = m_HoldProgress / m_HoldDuration;
+                InteractionUIManager.Instance.UpdateHoldProgress(progress);
+                yield return null;
+            }
+
+            InteractionUIManager.Instance.HideHoldProgress();
+
         }
         private IEnumerator AnimateDoor(int direction, stateOfDoor targetState)
         {
