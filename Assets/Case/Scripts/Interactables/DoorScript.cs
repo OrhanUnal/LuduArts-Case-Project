@@ -15,9 +15,13 @@ namespace InteractionSystem.Runtime.Interactables
             InAnimation,
             Open
         }
+
         [SerializeField] private bool m_IsLocked = false;
         [SerializeField] private KeyScript.KeyTypes m_RequiredKeyType = KeyScript.KeyTypes.None;
+        [SerializeField] private Transform m_HingeTransform;
+
         private const float k_AnimationDuration = 1.5f;
+        
         private stateOfDoor m_CurrentState = stateOfDoor.Closed;
         #endregion
 
@@ -98,20 +102,19 @@ namespace InteractionSystem.Runtime.Interactables
         private IEnumerator AnimateDoor(int direction, stateOfDoor targetState)
         {
             m_CurrentState = stateOfDoor.InAnimation;
-            Quaternion startRotation = transform.rotation;
-            Quaternion endRotation =
-                startRotation * Quaternion.Euler(0f, 90f * direction, 0f);
+            Quaternion startRotation = m_HingeTransform.rotation;
+            Quaternion endRotation = startRotation * Quaternion.Euler(0f, 90f * direction, 0f);
             float elapsedTime = 0f;
             while (elapsedTime < k_AnimationDuration)
             {
-                transform.rotation = Quaternion.Slerp(
+                m_HingeTransform.rotation = Quaternion.Slerp(
                     startRotation,
                     endRotation,
                     elapsedTime / k_AnimationDuration);
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
-            transform.rotation = endRotation;
+            m_HingeTransform.rotation = endRotation;
             m_CurrentState = targetState; // Set the final state after animation completes
         }
         #endregion
