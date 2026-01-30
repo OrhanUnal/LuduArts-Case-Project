@@ -147,19 +147,21 @@ public class PlayerController : MonoBehaviour
 
     private void InteractSomething(InputAction.CallbackContext context)
     {
-        Debug.Log(context.action);
         Ray interactRay = new Ray
         {
             origin = transform.position,
             direction = transform.forward
         };
-        if (context.action.name == "InteractHold")
-            Debug.Log("AAAAAA");
         if (Physics.Raycast(interactRay, out RaycastHit hitInfo, m_MaxInteractDistance))
         {
             IInteractable interactable = hitInfo.collider.GetComponent<IInteractable>();
             if (interactable != null)
-                interactable.InteractLogic();
+            {
+                if (context.action.name == "InteractHold")
+                    interactable.InteractLogicHold();
+                else
+                    interactable.InteractLogicButton();
+            }
         }
     }
 
