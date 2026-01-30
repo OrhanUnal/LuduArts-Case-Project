@@ -2,10 +2,6 @@ using InteractionSystem.Runtime.UI;
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// Chest interactable. Opens with hold interaction.
-/// Can only be opened once.
-/// </summary>
 public class ChestScript : MonoBehaviour, IInteractable
 {
     #region Fields
@@ -17,24 +13,30 @@ public class ChestScript : MonoBehaviour, IInteractable
 
     private bool m_IsOpen;
     private bool m_IsAnimating;
-    private float m_HoldProgress = 0f;
+    private float m_HoldProgress;
 
     #endregion
 
     #region Interface Implementations
+
     string IInteractable.GetInteractionPrompt()
     {
         return "[Hold E] Open Chest";
     }
+
     void IInteractable.InteractLogicButton()
     {
+        Debug.Log("Chest interaction requires holding.");
         StartCoroutine(HoldToOpen());
     }
 
     void IInteractable.InteractLogicHold()
     {
         if (m_IsOpen || m_IsAnimating)
+        {
+            Debug.LogWarning("Chest interaction ignored: already opened or animating.");
             return;
+        }
 
         StartCoroutine(OpenChestCoroutine());
     }
@@ -42,6 +44,7 @@ public class ChestScript : MonoBehaviour, IInteractable
     #endregion
 
     #region Methods
+
     private IEnumerator HoldToOpen()
     {
         m_HoldProgress = 0f;
@@ -50,13 +53,11 @@ public class ChestScript : MonoBehaviour, IInteractable
         while (m_HoldProgress < m_HoldDuration)
         {
             m_HoldProgress += Time.deltaTime;
-            float progress = m_HoldProgress / m_HoldDuration;
-            InteractionUIManager.Instance.UpdateHoldProgress(progress);
+            InteractionUIManager.Instance.UpdateHoldProgress(m_HoldProgress / m_HoldDuration);
             yield return null;
         }
 
         InteractionUIManager.Instance.HideHoldProgress();
-
     }
 
     private IEnumerator OpenChestCoroutine()
@@ -64,16 +65,15 @@ public class ChestScript : MonoBehaviour, IInteractable
         m_IsAnimating = true;
 
         Quaternion startRotation = m_HingeTransform.localRotation;
-        Quaternion endRotation =
-            startRotation * Quaternion.Euler(m_OpenAngle, 0f, 0f);
+        Quaternion endRotation = startRotation * Quaternion.Euler(m_OpenAngle, 0f, 0f);
 
         float elapsed = 0f;
-        
+
         while (elapsed < m_OpenDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / m_OpenDuration;
-            m_HingeTransform.localRotation = Quaternion.Slerp(startRotation, endRotation, t);
+            m_HingeTransform.localRotation =
+                Quaternion.Slerp(startRotation, endRotation, elapsed / m_OpenDuration);
             yield return null;
         }
 

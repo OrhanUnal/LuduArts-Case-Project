@@ -2,35 +2,51 @@ using UnityEngine;
 
 public class KeyScript : MonoBehaviour, IInteractable
 {
-    public enum KeyTypes
+    public enum KeyType
     {
-        redKey,
-        greenKey, 
-        blueKey,
+        Red,
+        Green,
+        Blue,
         None
     }
 
-    [SerializeField] private KeyTypes m_CurrentType = KeyTypes.None;
+    #region Fields
+
+    [SerializeField] private KeyType m_CurrentType = KeyType.None;
     [SerializeField] private MeshRenderer m_KeyRenderer;
+
+    #endregion
+
+    #region Unity Methods
 
     private void Start()
     {
         UpdateKeyColor();
     }
 
+    #endregion
+
+    #region Interface Implementations
+
     string IInteractable.GetInteractionPrompt()
     {
-        return $"[PRESS E] Take {m_CurrentType}";
+        return $"[Press E] Take {m_CurrentType}";
     }
+
     void IInteractable.InteractLogicHold()
     {
-        return;
+        Debug.Log("Key does not support hold interaction.");
     }
-    void IInteractable.InteractLogicButton() 
+
+    void IInteractable.InteractLogicButton()
     {
         InventoryManager.Instance.AddItem(m_CurrentType);
         Destroy(gameObject);
     }
+
+    #endregion
+
+    #region Methods
 
     private void UpdateKeyColor()
     {
@@ -39,28 +55,30 @@ public class KeyScript : MonoBehaviour, IInteractable
             m_KeyRenderer = GetComponentInChildren<MeshRenderer>();
         }
 
-        if (m_KeyRenderer != null)
+        if (m_KeyRenderer == null)
         {
-            Color keyColor = GetColorForKeyType(m_CurrentType);
-            
-            Material keyMaterial = new Material(m_KeyRenderer.sharedMaterial);
-            keyMaterial.color = keyColor;
-            m_KeyRenderer.material = keyMaterial;
+            Debug.LogError("Key renderer not found.");
+            return;
         }
+
+        Material keyMaterial = new Material(m_KeyRenderer.sharedMaterial)
+        {
+            color = GetColorForKeyType(m_CurrentType)
+        };
+
+        m_KeyRenderer.material = keyMaterial;
     }
 
-    private Color GetColorForKeyType(KeyTypes keyType)
+    private static Color GetColorForKeyType(KeyType keyType)
     {
-        switch (keyType)
+        return keyType switch
         {
-            case KeyTypes.redKey:
-                return Color.red;
-            case KeyTypes.blueKey:
-                return Color.blue;
-            case KeyTypes.greenKey:
-                return Color.green;
-            default:
-                return Color.white;
-        }
+            KeyType.Red => Color.red,
+            KeyType.Green => Color.green,
+            KeyType.Blue => Color.blue,
+            _ => Color.white
+        };
     }
+
+    #endregion
 }

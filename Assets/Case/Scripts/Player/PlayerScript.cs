@@ -199,7 +199,7 @@ public class PlayerController : MonoBehaviour
         }
 
         m_CurrentInteractable = null;
-        InteractionUIManager.Instance.ShowInteractionPrompt("There is not any object");
+        InteractionUIManager.Instance.ShowInteractionPrompt("Out of range");
     }
 
     #endregion
