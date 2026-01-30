@@ -2,6 +2,7 @@ using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float m_Sensitivity = 1f;
 
     [SerializeField] private AnimationCurve m_JumpCurve;
+    [SerializeField] private TextMeshProUGUI m_InteractText;
 
     private CharacterController m_CharacterController;
     private PlayerInput m_PlayerInput;
@@ -68,6 +70,7 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        UpdateInteractUI();
         HandleRotation();
         HandleMovement();
         HandleGravity();
@@ -163,6 +166,41 @@ public class PlayerController : MonoBehaviour
                     interactable.InteractLogicButton();
             }
         }
+    }
+
+    #endregion
+
+    #region UI Logic
+
+    private void UpdateInteractUI()
+    {
+        Ray interactRay = new Ray
+        {
+            origin = transform.position,
+            direction = transform.forward
+        };
+
+        if (Physics.Raycast(interactRay, out RaycastHit hitInfo, m_MaxInteractDistance))
+        {
+            if (hitInfo.collider.GetComponent<IInteractable>() != null)
+            {
+                GameObject collider = hitInfo.collider.gameObject;
+                Debug.Log(collider.name);
+
+                if(collider.name.Contains("P_Lever"))
+                    m_InteractText.text = "Press E to Toggle Lever";
+                if (collider.name.Contains("P_Chest"))
+                    m_InteractText.text = "Press E to Open Chest";
+                if(collider.name.Contains("P_Door"))
+                    m_InteractText.text = "Hold E to Open Door"; 
+                if (collider.name.Contains("P_Key"))
+                    m_InteractText.text = "Press E to Take Key";
+                m_InteractText.gameObject.SetActive(true);
+                return;
+            }
+        }
+
+        m_InteractText.gameObject.SetActive(false);
     }
 
     #endregion
