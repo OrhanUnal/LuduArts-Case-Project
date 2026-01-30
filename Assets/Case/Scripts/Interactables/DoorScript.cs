@@ -20,6 +20,16 @@ namespace InteractionSystem.Runtime.Interactables
         private const float k_AnimationDuration = 1.5f;
         private stateOfDoor m_CurrentState = stateOfDoor.Closed;
         #endregion
+
+        private void OnEnable()
+        {
+            LeverScript.OpenEveryDoor += HandleLever;
+        }
+
+        private void OnDisable()
+        {
+            LeverScript.OpenEveryDoor -= HandleLever;
+        }
         #region Interface Implementations
         void IInteractable.InteractLogicButton()
         {
@@ -43,6 +53,13 @@ namespace InteractionSystem.Runtime.Interactables
         }
         #endregion
         #region Methods
+
+        private void HandleLever()
+        {
+            if (m_CurrentState != stateOfDoor.InAnimation && !m_IsLocked)
+                ToggleDoor();
+        }
+
         private void TryUnlockDoor()
         {
             if (InventoryManager.Instance.HasItem(m_RequiredKeyType))
