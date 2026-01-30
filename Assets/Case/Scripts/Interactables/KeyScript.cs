@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class KeyScript : MonoBehaviour, IInteractable
 {
+    string IInteractable.GetInteractionPrompt()
+    {
+        return $"[PRESS E] Take {m_CurrentType}";
+    }
     public enum KeyTypes
     {
         redKey,

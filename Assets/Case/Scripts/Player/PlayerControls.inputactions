@@ -144,7 +144,7 @@
                     "name": "",
                     "id": "76f57f19-151b-4072-b5bb-8c3e381d1338",
                     "path": "<Keyboard>/e",
-                    "interactions": "Hold(duration=0.8)",
+                    "interactions": "Hold(duration=2)",
                     "processors": "",
                     "groups": "",
                     "action": "InteractHold",

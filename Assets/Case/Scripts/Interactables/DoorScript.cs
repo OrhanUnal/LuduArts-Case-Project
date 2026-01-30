@@ -1,4 +1,6 @@
+using InteractionSystem.Runtime.UI;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 namespace InteractionSystem.Runtime.Interactables
 {
@@ -19,8 +21,10 @@ namespace InteractionSystem.Runtime.Interactables
         [SerializeField] private bool m_IsLocked = false;
         [SerializeField] private KeyScript.KeyTypes m_RequiredKeyType = KeyScript.KeyTypes.None;
         [SerializeField] private Transform m_HingeTransform;
+        [SerializeField] private TextMeshProUGUI m_InteractResponse;
 
         private const float k_AnimationDuration = 1.5f;
+        private const float k_AlertMessageTimer = 1.3f;
         
         private stateOfDoor m_CurrentState = stateOfDoor.Closed;
         #endregion
@@ -34,7 +38,17 @@ namespace InteractionSystem.Runtime.Interactables
         {
             LeverScript.OpenEveryDoor -= HandleLever;
         }
+
         #region Interface Implementations
+        string IInteractable.GetInteractionPrompt()
+        {
+            if (m_IsLocked)
+                return $"[Hold E] Unlock Door ({m_RequiredKeyType} required)";
+            else if (m_CurrentState == stateOfDoor.Open)
+                return "[E] Close Door";
+            else
+                return "[E] Open Door";
+        }
         void IInteractable.InteractLogicButton()
         {
             if (m_CurrentState == stateOfDoor.InAnimation)
@@ -69,27 +83,25 @@ namespace InteractionSystem.Runtime.Interactables
             if (InventoryManager.Instance.HasItem(m_RequiredKeyType))
             {
                 m_IsLocked = false;
-                Debug.Log("Door unlocked!");
                 InventoryManager.Instance.RemoveItem(m_RequiredKeyType);
                 OpenDoor();
+                InteractionUIManager.Instance.ShowAlert("Openning the door");
             }
             else
             {
-                Debug.Log($"You need {m_RequiredKeyType} to unlock this door.");
+                InteractionUIManager.Instance.ShowAlert($"You need to {m_RequiredKeyType} to unlock this door");
             }
         }
         private void OpenDoor()
         {
             if (m_CurrentState == stateOfDoor.Open || m_CurrentState == stateOfDoor.InAnimation)
                 return;
-            Debug.Log("DOOR OPENING");
             StartCoroutine(AnimateDoor(1, stateOfDoor.Open));
         }
         private void CloseDoor()
         {
             if (m_CurrentState == stateOfDoor.Closed || m_CurrentState == stateOfDoor.InAnimation)
                 return;
-            Debug.Log("DOOR CLOSING");
             StartCoroutine(AnimateDoor(-1, stateOfDoor.Closed));
         }
         private void ToggleDoor()
